@@ -22,13 +22,9 @@ main :: IO ()
 main = do
   putStrLn "Starting Rrpc server..."
   r@(hin, hout, _, _) <-
-    runInteractiveProcess "R" ["--slave", "--vanilla"] Nothing
+    runInteractiveProcess "R" ["--slave", "--silent"] Nothing
       $ Just [ ("R_PROFILE", "rpc_server/server.r")
             , ("R_SERVER_SOURCE", "rpc_server/some_script.r") ]
-  --hPutStr hin "3"
-  --hFlush hin
-  --hGetLines hout >>= print
-  --BS.hGetNonBlocking hout 4098 >>= print
   quickHttpServe $ site r
 
 
@@ -41,8 +37,8 @@ hGetLines hin = do
         then return []
         else E.ioError e
     Right line -> do
-      lines <- hGetLines hin
-      return (line:lines)
+      --lines <- hGetLines hin
+      return [line]--(line:lines)
 
 
 site :: ProcHandles  -> Snap ()
