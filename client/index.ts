@@ -6,4 +6,4 @@ $(function() {
 
   var user = "Jane User";
 
-})
+});

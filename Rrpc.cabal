@@ -1,16 +1,16 @@
-Name:                Rrpc
-Version:             0.1
-Synopsis:            Project Synopsis Here
+Name:                HRRPC
+Version:             0.0.0
+Synopsis:            Prototype RPC layer between Haskell and R
 Description:         Project Description Here
 License:             AllRightsReserved
-Author:              Author
-Maintainer:          maintainer@example.com
+Author:              James Hudon <jameshudon@gmail.com>
+Maintainer:          James Hudon <jameshudon@gmail.com>
 Stability:           Experimental
 Category:            Web
 Build-type:          Simple
 Cabal-version:       >=1.2
 
-Executable Rrpc
+Executable HRRPC
   hs-source-dirs: src
   main-is: Main.hs
 
@@ -22,7 +22,10 @@ Executable Rrpc
     snap-core                 >= 0.9   && < 0.11,
     snap-server               >= 0.9   && < 0.11,
     transformers              >= 0.3   && < 0.4,
-    process                   >= 1     && < 2
+    process                   >= 1     && < 2,
+    aeson                     >= 0.6   && < 0.7,
+    text                      >= 0.11  && < 0.12,
+    utf8-string               >= 0.3   && < 0.4
 
   if impl(ghc >= 6.12.0)
     ghc-options: -threaded -Wall -fwarn-tabs -funbox-strict-fields -O2
