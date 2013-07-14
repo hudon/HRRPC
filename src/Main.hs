@@ -11,7 +11,7 @@ import           System.Process (runInteractiveProcess, ProcessHandle)
 import qualified System.IO as IO
 import           System.IO.Error (isEOFError)
 import qualified Control.Exception as E
-import           Data.Aeson (ToJSON, encode, (.=), object, toJSON)
+import           Data.Aeson (ToJSON, encode, (.=), object, toJSON, Value(..))
 import           Data.Text (Text)
 import           Data.ByteString.Lazy (toStrict)
 import           Data.ByteString.UTF8 (fromString, toString)
@@ -20,7 +20,7 @@ type ProcHandles = (IO.Handle, IO.Handle, IO.Handle, ProcessHandle)
 
 data RPC = RPC
   { func :: Text
-  , params :: [Text]
+  , params :: Value
   } deriving Show
 
 instance ToJSON RPC where
@@ -74,6 +74,6 @@ randVecHandler r = liftIO (rRPC r) >>= writeBS . fromString
 -- utf8-string's from and to String functions
 rRPC :: ProcHandles -> IO String
 rRPC (hin, hout, herr, _) = do
-  IO.hPutStrLn hin . toString . toStrict $ encode (RPC {func = "fib", params = ["12"]})
+  IO.hPutStrLn hin . toString . toStrict $ encode (RPC {func = "fib", params = Number 12})
   IO.hFlush hin
   getResults hout herr
