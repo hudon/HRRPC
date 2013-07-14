@@ -11,7 +11,7 @@ function parseRPCResult (res: string): RPCResult {
 
 $(function() {
 
-  $('#R-rand-vec').submit(function (e) {
+  $('#R-rand-vec').submit(function (e: JQueryEventObject) {
     $.get('R-rand-vec', function (res: string) {
       $('#R-rand-vec-result').text(parseRPCResult(res).result);
     });
@@ -19,7 +19,7 @@ $(function() {
     return false;
   });
 
-  $('#R-fib').submit(function (e) {
+  $('#R-fib').submit(function (e: JQueryEventObject) {
     $.get('R-fib', $(this).serialize(), function (res: string) {
       $('#R-fib-param-result').text(parseRPCResult(res).result);
     });
