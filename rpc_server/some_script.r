@@ -1,7 +1,7 @@
 require( "stats", quietly = TRUE )
 
-user_func <- function( times ) {
-  rep( "I am a teapot.", times )
+user_func <- function() {
+  sample(1:100, 10)
 }
 
 fib <- function( n ) {
