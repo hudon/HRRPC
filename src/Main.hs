@@ -21,13 +21,21 @@ type ProcHandles = (IO.Handle, IO.Handle, IO.Handle, ProcessHandle)
 main :: IO ()
 main = do
   putStrLn "Starting Rrpc server..."
-  r@(hin, hout, _, _) <-
-    runInteractiveProcess "R" ["--slave", "--silent"] Nothing
-      $ Just [ ("R_PROFILE", "rpc_server/server.r")
-            , ("R_SERVER_SOURCE", "rpc_server/some_script.r") ]
+  r <- runInteractiveProcess "R" ["--slave", "--silent"] Nothing
+        $ Just [ ("R_PROFILE", "rpc_server/server.r")
+               , ("R_SERVER_SOURCE", "rpc_server/some_script.r") ]
   quickHttpServe $ site r
 
 
+site :: ProcHandles  -> Snap ()
+site rProc =
+    ifTop (serveDirectory "static") <|>
+    route [ ("send-cmd", cmdHandler rProc)
+          ] <|>
+    dir "static" (serveDirectory "static")
+
+
+-- If input is EOF, return []. Otherwise, return all input lines
 hGetLines :: IO.Handle -> IO [String]
 hGetLines hin = do
   input <- E.try $ IO.hGetLine hin
@@ -37,16 +45,9 @@ hGetLines hin = do
         then return []
         else E.ioError e
     Right line -> do
-      --lines <- hGetLines hin
-      return [line]--(line:lines)
+      lines <- hGetLines hin
+      return (line:lines)
 
-
-site :: ProcHandles  -> Snap ()
-site rProc =
-    ifTop (serveDirectory "static") <|>
-    route [ ("send-cmd", cmdHandler rProc)
-          ] <|>
-    dir "static" (serveDirectory "static")
 
 -- TODO: restart R proc on fail
 
@@ -58,17 +59,17 @@ cmdHandler (rin, rout, rerr, _) = do
   res <- liftIO $ do
     let c = C.append (fromJust cmd) (C.pack "\n")
     -- Send cmd to R proc and get result
-    putStrLn $ C.unpack c
     IO.hPutStr rin $ C.unpack c
     IO.hFlush rin
     getResults rout rerr
   writeBS $ C.pack res
   where
     -- If stdout has nothing, returns what's in stderr...
+    -- We're assuming the R RPC proc returns 1 line of results.
     getResults :: IO.Handle -> IO.Handle -> IO String
     getResults hout herr = do
-      o <- hGetLines rout
+      o <- E.try $ IO.hGetLine rout
       case o of
-        [] -> hGetLines herr >>= return . unlines
-        xs -> return $ unlines xs
+        Left e -> if isEOFError e then hGetLines herr >>= return . unlines else E.ioError e
+        Right line -> return line
 
