@@ -7,12 +7,15 @@
 </head>
 
 <body>
-  <!-- TODO: have a bunch of different forms that represent different R calls.
-  The inputs will be the params. Handle AJAX through TypeScript and AngularJS
-  -->
   <form id="R-rand-vec" action="">
     <label>Get 10 random numbers from 1 to 100.</label>
     <input type="submit" value="Send">
   </form>
-  <p id="R-rand-vec-result" ></p>
+  <p id="R-rand-vec-result" />
+  <form id="R-fib" action="">
+    <label for="fib-param"> Compute fibonacci with n=</label>
+    <input id="fib-param" type="text" name="fib-n">
+    <input type="submit" value="Send">
+  </form>
+  <p id="R-fib-param-result" />
 </body>

@@ -16,6 +16,7 @@ import           Data.Aeson.Types (emptyArray)
 import           Data.Text (Text)
 import           Data.ByteString.Lazy (toStrict)
 import           Data.ByteString.UTF8 (fromString, toString)
+import           Data.Maybe (fromJust)
 
 type ProcHandles = (IO.Handle, IO.Handle, IO.Handle, ProcessHandle)
 
@@ -40,6 +41,7 @@ site :: ProcHandles  -> Snap ()
 site rProc =
     ifTop (serveDirectory "static") <|>
     route [ ("R-rand-vec", randVecHandler rProc)
+          , ("R-fib", fibHandler rProc)
           ] <|>
     dir "static" (serveDirectory "static")
 
@@ -69,12 +71,25 @@ getResults hout herr = do
 
 
 randVecHandler :: ProcHandles -> Snap ()
-randVecHandler r = liftIO (rRPC r) >>= writeBS . fromString
+randVecHandler r = rRPCHandler r "user_func" emptyArray
+
+fibHandler :: ProcHandles -> Snap ()
+fibHandler r = do
+  n <- getParam "fib-n"
+  rRPCHandler r "fib" (bsToNumValue n)
+  where
+    bsToNumValue = toJSON . (read :: String -> Double) . toString . fromJust
+
+-- TODO pull the result out of the JSON
+
+rRPCHandler :: ProcHandles -> Text -> Value -> Snap()
+rRPCHandler r f p = liftIO (rRPC r f p) >>= writeBS . fromString
 
 -- aeson encodes to a lazy bytestring, so we make it strict and use
 -- utf8-string's from and to String functions
-rRPC :: ProcHandles -> IO String
-rRPC (hin, hout, herr, _) = do
-  IO.hPutStrLn hin . toString . toStrict $ encode (RPC {func="user_func", params=emptyArray})
+rRPC :: ProcHandles -> Text -> Value -> IO String
+rRPC (hin, hout, herr, _) f p = do
+  IO.hPutStrLn hin . toString . toStrict $ encode (RPC {func=f, params=p})
   IO.hFlush hin
   getResults hout herr
+
