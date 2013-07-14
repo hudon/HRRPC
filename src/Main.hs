@@ -10,8 +10,6 @@ import           Control.Monad.IO.Class
 import           System.Process (runInteractiveProcess, ProcessHandle)
 import qualified System.IO as IO
 import           System.IO.Error (isEOFError)
---import           System.IO.Unsafe (unsafeInterleaveIO)
-import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as C
 import           Data.Maybe
 import qualified Control.Exception as E
@@ -45,8 +43,8 @@ hGetLines hin = do
         then return []
         else E.ioError e
     Right line -> do
-      lines <- hGetLines hin
-      return (line:lines)
+      ls <- hGetLines hin
+      return (line:ls)
 
 
 -- TODO: restart R proc on fail
@@ -68,7 +66,7 @@ cmdHandler (rin, rout, rerr, _) = do
     -- We're assuming the R RPC proc returns 1 line of results.
     getResults :: IO.Handle -> IO.Handle -> IO String
     getResults hout herr = do
-      o <- E.try $ IO.hGetLine rout
+      o <- E.try $ IO.hGetLine hout
       case o of
         Left e -> if isEOFError e then hGetLines herr >>= return . unlines else E.ioError e
         Right line -> return line
