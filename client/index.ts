@@ -1,27 +1,26 @@
 /// <reference path="jquery.d.ts" />
 
-interface RPCResult {
-  HRRPC: string;
-  result: any;
-}
-
-function parseRPCResult (res: string): RPCResult {
-  return JSON.parse(res);
-}
-
 $(function() {
 
   $('#R-rand-vec').submit(function (e: JQueryEventObject) {
     $.get('R-rand-vec', function (res: string) {
-      $('#R-rand-vec-result').text(parseRPCResult(res).result);
-    });
+      $('#R-rand-vec-result').text(res);
+    }).fail(function (jqxhr, status, err) { console.log(status);console.log(err); });
     e.preventDefault();
     return false;
   });
 
   $('#R-fib').submit(function (e: JQueryEventObject) {
     $.get('R-fib', $(this).serialize(), function (res: string) {
-      $('#R-fib-param-result').text(parseRPCResult(res).result);
+      $('#R-fib-param-result').text(res);
+    });
+    e.preventDefault();
+    return false;
+  });
+
+  $('#R-data-frame').submit(function (e: JQueryEventObject) {
+    $.get('R-df', function (res: string) {
+      $('#R-df-result').text(res);
     });
     e.preventDefault();
     return false;

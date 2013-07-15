@@ -9,3 +9,7 @@ fib <- function( n ) {
     return( 1 )
   return( fib( n - 1 ) + fib( n - 2 ) )
 }
+
+SomeDF <- function () {
+  return(data.frame(abc=1:5, foo=6:10, bar=11:15))
+}
